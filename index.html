@@ -49,6 +49,12 @@
             .nav-active {
                 @apply text-primary border-b-2 border-primary font-bold;
             }
+            .popup-enter {
+                @apply transition-all duration-300 opacity-0 scale-95;
+            }
+            .popup-enter-active {
+                @apply opacity-100 scale-100;
+            }
         }
     </style>
     <style>
@@ -97,6 +103,61 @@
             opacity: 1;
             visibility: visible;
         }
+        /* 弹窗遮罩层 */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* 弹窗内容 */
+        .popup-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+        .popup-overlay.show .popup-content {
+            transform: scale(1);
+        }
+        /* 打卡徽章样式 */
+        .checkin-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #B91C1C;
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .spot-card.checked-in .checkin-badge {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="font-sans text-dark">
@@ -121,6 +182,11 @@
                     <button class="btn-effect bg-primary text-white px-3 py-1.5 rounded-lg text-sm md:text-base flex items-center gap-1">
                         <i class="fa-solid fa-download"></i>
                         <span class="hidden sm:inline">下载资料</span>
+                    </button>
+                    <!-- 打卡统计按钮 -->
+                    <button class="btn-effect bg-secondary/10 text-secondary px-3 py-1.5 rounded-lg text-sm md:text-base flex items-center gap-1" id="checkinStatsBtn">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span class="hidden sm:inline" id="checkinCount">已打卡 0/7</span>
                     </button>
                     <!-- 移动端汉堡菜单按钮 -->
                     <button class="menu-toggle md:hidden bg-primary/10 text-primary p-2 rounded-lg" id="menuBtn">
@@ -204,12 +270,24 @@
         </div>
 
         <!-- 延安革命纪念馆 -->
-        <section id="yanan-memorial" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="yanan-memorial" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="延安革命纪念馆">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/6BsZGfvUmgvToWXFiaPcrcoSicibHLJzGibnEUBiasbUlYLOPfQVXhS1LibFyMHKOsj1pJkg2F62CBicyUyRLoiaich8wgw/640?wx_fmt=jpeg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=1" alt="延安革命纪念馆" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\1.webp" alt="延安革命纪念馆" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">核心研学基地 · 红色历史宝库</p>
+                    <p class="text-white text-xl font-bold text-shadow">延安革命纪念馆位于宝塔区西北延河东岸，距城1公里处。
+
+1973年周恩来总理在参观时指出:"一个党史陈列，就是一部党史教课书"。1989年，江泽民总书记来延视察时，神情专注地参观了全部展览内容。
+
+延安革命纪念馆就是中共中央在延安最为生动的教材，是中国20世纪一个辉煌的聚光点。1996年被中宣部定为全国爱国主义教育示范基地。
+
+延安革命纪念馆是向广大群众进行爱国主义、革命传统和延安精神教育的重要基地。建馆40多年来，累计接待中外观众1800多万人次。
+
+延安革命纪念馆是旅游延安参观、考察必到之处。</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -239,9 +317,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yanan-memorial">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yanan-memorial">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -260,12 +342,16 @@
         </section>
 
         <!-- 宝塔山 -->
-        <section id="baota-mountain" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="baota-mountain" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="宝塔山">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://mmbiz.qpic.cn/mmbiz_jpg/6BsZGfvUmgvToWXFiaPcrcoSicibHLJzGibnuyCfBicSy1QC0bpd5dibXNFaWheF5IPjMfggoibBbSu0INIuxudI20ZlQ/640?wx_fmt=jpeg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=2" alt="宝塔山" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\2.webp" alt="宝塔山" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">延安城市象征 · 精神地标</p>
+                    <p class="text-white text-xl font-bold text-shadow">​宝塔建于唐代，高44米，共九层，登上塔顶，全城风貌可尽收眼底。它是历史名城延安的标志，是革命圣地的象征，是延安市的标志性建筑，是游览延安的必去之地。山下还有历代遗留下来的摩岩刻字多处，范仲淹隶书的"嘉岭山"和"胸中自有数万甲兵"等题刻最著名。宝塔山融自然景观、人文景观、历史文物、革命旧址为一体的著名风景名胜区。</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -295,9 +381,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="baota-mountain">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="baota-mountain">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -316,12 +406,16 @@
         </section>
 
         <!-- 杨家岭 -->
-        <section id="yangjialing" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="yangjialing" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="杨家岭">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src=https://mmbiz.qpic.cn/mmbiz_jpg/6BsZGfvUmgvToWXFiaPcrcoSicibHLJzGibnIGiaXjcD8quZjcgHH7wE0pUOlPicSZlLWPCIRVficrqPgGkiabd0Gcv03w/640?wx_fmt=jpeg&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1#imgIndex=4" alt="杨家岭" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\3.webp" alt="杨家岭" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">中共七大召开地 · 革命旧址</p>
+                    <p class="text-white text-xl font-bold text-shadow">杨家岭是中共中央领导在1938年11月至1947年3月期间的住处。当年这里还曾进行过轰轰烈烈的大生产运动、整风运动，现在主要有中共中央七大会址、延安文艺座谈会会址两处可供参观，在会址后面的小山坡上，散落着一排窑洞，这就是毛泽东、朱德、周恩来，刘少奇等领导同志们当年的住所。</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -351,9 +445,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yangjialing">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yangjialing">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -372,12 +470,17 @@
         </section>
 
         <!-- 枣园 -->
-        <section id="zaoyuan" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="zaoyuan" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="枣园">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://picsum.photos/seed/zaoyuan/1200/600" alt="枣园" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\5.jpg" alt="枣园" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">中共中央书记处旧址 · 清幽圣地</p>
+                    <p class="text-white text-xl font-bold text-shadow">枣园，又名延园，位于陕西省延安市，占地面积80亩，有“延安中南海”美誉，曾经是中共中央书记处所在地，是以毛泽东为首的中共中央书记处在抗日战争后期和解放战争前期的所在地，1953年旧址修复，1959年正式对外开放，是国家5A级旅游景点、全国重点文物保护单位、全国爱国主义教育示范基地、延安精神教育基地、廉政教育示范基地等。
+</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -407,9 +510,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="zaoyuan">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="zaoyuan">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -428,12 +535,16 @@
         </section>
 
         <!-- 为人民服务讲话台 -->
-        <section id="serve-people" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="serve-people" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="为人民服务讲话台">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://picsum.photos/seed/servepeople/1200/600" alt="为人民服务讲话台" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\4.jpg" alt="为人民服务讲话台" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">经典演讲旧址 · 宗旨传承地</p>
+                    <p class="text-white text-xl font-bold text-shadow">《为人民服务》讲话台位于枣园后沟口，是1944年9月8日毛泽东在中共中央直属机关为追悼张思德召集的会议上，发表《为人民服务》讲话的地方</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -463,9 +574,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="serve-people">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="serve-people">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -484,12 +599,16 @@
         </section>
 
         <!-- 抗大 -->
-        <section id="kangda" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="kangda" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="中国人民抗日军事政治大学（抗大）">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://picsum.photos/seed/kangda/1200/600" alt="抗大" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\6.png" alt="抗大" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">革命干部摇篮 · 抗大精神传承</p>
+                    <p class="text-white text-xl font-bold text-shadow">中国人民抗日军事政治大学简称抗大。土地革命战争和抗日战争时期，中国共产党为培养抗日干部而设立的学校。其前身为红军大学。1936年6月在陕西瓦窑堡成立，不久后迁往陕西保安。最初名为中国抗日红军大学，1937年1月，改名为中国人民抗日军事政治大学，校址迁往陕西延安。学校成立时，林彪任校长，刘伯承任副校长，毛泽东任教育委员会主席，罗瑞卿任教育长，刘亚楼任训练部长，杨至成任校务部长。抗大的学员以部队中的红军干部以及来自全国各地的知识青年为主。学校坚持“团结、紧张、严肃、活泼”的校风，以强调理论联系实际的教学方法，以注重思想政治教育为特色的教育内容，培养抗日干部。1939年，抗大总校迁往晋冀豫边区，并在各主要根据地先后创办12所分校。1943年，总校迁回陕西绥德。1945年8月，中国人民抗日军事政治大学结束。学校开办期间，共培养十多万名抗日干部。  </p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -519,9 +638,13 @@
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="kangda">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="kangda">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -540,12 +663,16 @@
         </section>
 
         <!-- 红秀《延安延安》 -->
-        <section id="yanan-yanan" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover">
+        <section id="yanan-yanan" class="spot-card bg-white rounded-xl shadow-lg overflow-hidden mb-16 card-hover" data-spot-name="红秀《延安延安》">
+            <!-- 打卡徽章 -->
+            <div class="checkin-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
             <div class="relative">
-                <img src="https://picsum.photos/seed/yananyan/1200/600" alt="红秀《延安延安》" class="w-full h-64 md:h-96 object-cover">
+                <img src="C:\Users\Lenovo\Pictures\Saved Pictures\7.jpg" alt="红秀《延安延安》" class="w-full h-64 md:h-96 object-cover">
                 <!-- 图片遮罩层 -->
                 <div class="img-overlay absolute inset-0 bg-card-gradient opacity-0 flex items-end justify-center pb-6">
-                    <p class="text-white text-xl font-bold text-shadow">大型实景演出 · 沉浸式体验</p>
+                    <p class="text-white text-xl font-bold text-shadow">红秀《延安延安》是一部大型红色主题实景演出，以延安革命历史为背景，通过沉浸式的舞台表现形式，再现了革命年代延安的峥嵘岁月。演出融合了舞蹈、音乐、戏剧等多种艺术形式，利用先进的舞台技术和真实的场景布置，让观众仿佛穿越时空，亲身感受革命先辈们在延安的奋斗历程和精神风貌。作为延安红色文旅的重要名片，《延安延安》为研学师生提供了沉浸式的红色文化体验，是本次研学之旅中感受延安精神时代魅力的重要环节。</p>
                 </div>
                 <!-- 景点标签 -->
                 <div class="absolute top-4 left-4">
@@ -566,18 +693,22 @@
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star"></i>
-                        <i class="fa-solid fa-star"></i>
-                        <span class="text-gray-600 ml-1">5.0</span>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                        <span class="text-gray-600 ml-1">4.5</span>
                     </div>
                 </div>
                 <p class="text-gray-700 leading-relaxed mb-6 md:mb-8">
-                    红秀《延安延安》是一部以延安革命历史为背景的大型实景演出，采用现代舞台技术和艺术表现形式，生动再现了延安时期的革命生活和历史场景。演出以普通革命者的视角切入，讲述了他们在延安追求理想、艰苦奋斗、无私奉献的感人故事，展现了延安精神的丰富内涵和时代价值。作为本次三秦学期圣地行的特色体验项目，观看红秀《延安延安》能够让师生们以更直观、更生动的方式感受延安的红色文化，增强对革命历史的理解和感悟。
+                    红秀《延安延安》是一部大型红色主题实景演出，以延安革命历史为背景，通过沉浸式的舞台表现形式，再现了革命年代延安的峥嵘岁月。演出融合了舞蹈、音乐、戏剧等多种艺术形式，利用先进的舞台技术和真实的场景布置，让观众仿佛穿越时空，亲身感受革命先辈们在延安的奋斗历程和精神风貌。作为延安红色文旅的重要名片，《延安延安》为研学师生提供了沉浸式的红色文化体验，是本次研学之旅中感受延安精神时代魅力的重要环节。
                 </p>
                 <!-- 景点按钮组 -->
                 <div class="flex flex-wrap gap-3">
-                    <button class="btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2">
+                    <button class="detail-btn btn-effect bg-primary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yanan-yanan">
                         <i class="fa-solid fa-circle-info"></i>
                         查看详情
+                    </button>
+                    <button class="checkin-btn btn-effect bg-secondary text-white px-5 py-2 rounded-lg font-medium flex items-center gap-2" data-spot-id="yanan-yanan">
+                        <i class="fa-solid fa-map-pin"></i>
+                        打卡景点
                     </button>
                     <button class="collect-btn btn-effect bg-gray-100 text-gray-700 px-5 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fa-regular fa-heart"></i>
@@ -588,228 +719,239 @@
                         分享景点
                     </button>
                     <button class="btn-effect bg-secondary/10 text-secondary px-5 py-2 rounded-lg font-medium flex items-center gap-2">
-                        <i class="fa-solid fa-ticket"></i>
-                        预约购票
+                        <i class="fa-solid fa-location-dot"></i>
+                        导航定位
                     </button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 研学服务区域（新增功能区，增加按钮） -->
-    <section class="bg-gray-100 py-12 md:py-16 border-t border-gray-200">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-10 md:mb-14">
-                <h3 class="text-2xl md:text-3xl font-bold text-primary mb-4">研学配套服务</h3>
-                <div class="w-20 h-1 bg-secondary mx-auto rounded-full"></div>
+    <!-- 详情弹窗 -->
+    <div class="popup-overlay" id="detailPopup">
+        <div class="popup-content p-6 md:p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl md:text-3xl font-bold text-primary" id="popupTitle"></h3>
+                <button class="btn-effect text-gray-500 hover:text-primary" id="closePopup">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
-
-            <!-- 服务卡片组 -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 服务1：行程下载 -->
-                <div class="bg-white rounded-xl shadow-md p-6 md:p-8 card-hover">
-                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fa-solid fa-file-pdf text-primary text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-center mb-3">研学行程下载</h4>
-                    <p class="text-gray-600 text-center mb-6">包含每日行程安排、景点参观顺序、注意事项等详细内容</p>
-                    <div class="flex justify-center">
-                        <button class="btn-effect bg-primary text-white px-6 py-2.5 rounded-lg font-medium flex items-center gap-2">
-                            <i class="fa-solid fa-download"></i>
-                            立即下载
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 服务2：图集查看 -->
-                <div class="bg-white rounded-xl shadow-md p-6 md:p-8 card-hover">
-                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fa-solid fa-images text-primary text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-center mb-3">高清景点图集</h4>
-                    <p class="text-gray-600 text-center mb-6">包含各景点实拍照片、历史老照片、研学活动精彩瞬间</p>
-                    <div class="flex justify-center">
-                        <button class="btn-effect bg-primary text-white px-6 py-2.5 rounded-lg font-medium flex items-center gap-2">
-                            <i class="fa-solid fa-eye"></i>
-                            查看图集
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 服务3：联系我们 -->
-                <div class="bg-white rounded-xl shadow-md p-6 md:p-8 card-hover">
-                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-                        <i class="fa-solid fa-phone-volume text-primary text-2xl"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-center mb-3">联系带队老师</h4>
-                    <p class="text-gray-600 text-center mb-6">获取研学咨询、问题反馈、特殊需求协调等专属服务</p>
-                    <div class="flex justify-center">
-                        <button class="btn-effect bg-primary text-white px-6 py-2.5 rounded-lg font-medium flex items-center gap-2">
-                            <i class="fa-solid fa-user-tie"></i>
-                            联系我们
-                        </button>
-                    </div>
-                </div>
+            <div class="mb-6">
+                <img id="popupImage" src="" alt="" class="w-full h-64 md:h-80 object-cover rounded-lg shadow-md">
+            </div>
+            <div class="mb-4 flex items-center gap-2 text-secondary" id="popupRating">
+                <!-- 评分星星动态生成 -->
+            </div>
+            <div class="text-gray-700 leading-relaxed" id="popupContent">
+                <!-- 详情内容动态生成 -->
+            </div>
+            <div class="mt-8 flex justify-end">
+                <button class="btn-effect bg-primary text-white px-6 py-2 rounded-lg font-medium" id="closePopupBtn">
+                    关闭
+                </button>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- 页脚区域（优化+增加按钮） -->
-    <footer class="bg-dark text-white py-10 md:py-14">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <!-- 左侧信息 -->
-                <div class="mb-6 md:mb-0 text-center md:text-left">
-                    <div class="flex items-center gap-2 justify-center md:justify-start mb-2">
-                        <i class="fa-solid fa-flag text-primary text-2xl"></i>
-                        <h2 class="text-xl font-bold">陕旅烹院·智能信息管理学院</h2>
-                    </div>
-                    <p class="text-gray-400">三秦学期圣地行 - 红色延安研学专题网页</p>
-                </div>
-
-                <!-- 右侧按钮组 -->
-                <div class="flex gap-3">
-                    <button class="btn-effect bg-gray-800 text-white p-3 rounded-lg">
-                        <i class="fa-solid fa-envelope text-xl"></i>
-                    </button>
-                    <button class="btn-effect bg-gray-800 text-white p-3 rounded-lg">
-                        <i class="fa-solid fa-weixin text-xl"></i>
-                    </button>
-                    <button class="btn-effect bg-gray-800 text-white p-3 rounded-lg">
-                        <i class="fa-solid fa-phone text-xl"></i>
-                    </button>
-                    <button class="btn-effect bg-gray-800 text-white p-3 rounded-lg">
-                        <i class="fa-solid fa-map text-xl"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400 mb-4 md:mb-0">© 2025 陕西旅游烹饪职业学院智能信息管理学院. 保留所有权利.</p>
-                <div class="flex gap-6">
-                    <button class="text-gray-400 hover:text-white transition-colors duration-300">隐私政策</button>
-                    <button class="text-gray-400 hover:text-white transition-colors duration-300">使用条款</button>
-                    <button class="text-gray-400 hover:text-white transition-colors duration-300">意见反馈</button>
-                </div>
-            </div>
+    <!-- 打卡成功提示 -->
+    <div class="fixed bottom-8 right-8 bg-primary text-white px-6 py-3 rounded-lg shadow-xl z-50 opacity-0 transition-all duration-300 transform translate-y-4" id="checkinToast">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-check-circle text-xl"></i>
+            <span id="toastText">打卡成功！</span>
         </div>
-    </footer>
+    </div>
 
     <!-- 返回顶部按钮 -->
-    <button class="back-to-top fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg z-40" id="backToTop">
+    <button class="back-to-top fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg" id="backToTop">
         <i class="fa-solid fa-arrow-up"></i>
     </button>
 
-    <!-- 核心交互脚本 -->
+    <!-- JavaScript功能实现 -->
     <script>
-        // 1. 汉堡菜单切换
+        // 全局变量
+        const checkinSpots = new Set(); // 已打卡景点ID集合
+        const totalSpots = 7; // 总景点数
+        
+        // DOM元素
         const menuBtn = document.getElementById('menuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
-        const menuIcon = menuBtn.querySelector('i');
-
-        menuBtn.addEventListener('click', function() {
-            mobileMenu.classList.toggle('open');
-            // 切换图标
-            if (menuIcon.classList.contains('fa-bars')) {
-                menuIcon.classList.remove('fa-bars');
-                menuIcon.classList.add('fa-xmark');
-            } else {
-                menuIcon.classList.remove('fa-xmark');
-                menuIcon.classList.add('fa-bars');
-            }
-        });
-
-        // 2. 收藏按钮状态切换
-        const collectBtns = document.querySelectorAll('.collect-btn');
-        collectBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const icon = this.querySelector('i');
-                const text = this.querySelector('span') || this.childNodes[1]; // 兼容文本节点
-                if (icon.classList.contains('fa-regular')) {
-                    icon.classList.remove('fa-regular');
-                    icon.classList.add('fa-solid');
-                    icon.style.color = '#EF4444';
-                    this.style.backgroundColor = '#FCA5A5';
-                    this.style.color = '#B91C1C';
-                    // 修改文字
-                    if (text.nodeType === 3) {
-                        text.textContent = ' 已收藏';
-                    } else {
-                        text.textContent = '已收藏';
-                    }
-                } else {
-                    icon.classList.remove('fa-solid');
-                    icon.classList.add('fa-regular');
-                    icon.style.color = '';
-                    this.style.backgroundColor = '';
-                    this.style.color = '';
-                    // 恢复文字
-                    if (text.nodeType === 3) {
-                        text.textContent = ' 收藏景点';
-                    } else {
-                        text.textContent = '收藏景点';
-                    }
+        const detailPopup = document.getElementById('detailPopup');
+        const closePopup = document.getElementById('closePopup');
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        const checkinToast = document.getElementById('checkinToast');
+        const backToTop = document.getElementById('backToTop');
+        const checkinCount = document.getElementById('checkinCount');
+        const checkinStatsBtn = document.getElementById('checkinStatsBtn');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端菜单切换
+            menuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('open');
+            });
+            
+            // 详情弹窗关闭
+            closePopup.addEventListener('click', closeDetailPopup);
+            closePopupBtn.addEventListener('click', closeDetailPopup);
+            
+            // 点击弹窗外层关闭
+            detailPopup.addEventListener('click', function(e) {
+                if (e.target === detailPopup) {
+                    closeDetailPopup();
                 }
             });
-        });
-
-        // 3. 分享按钮提示
-        const shareBtns = document.querySelectorAll('.share-btn');
-        shareBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                // 创建提示框
-                const toast = document.createElement('div');
-                toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 bg-dark text-white px-4 py-2 rounded-lg shadow-xl z-50 transition-all duration-300';
-                toast.textContent = '分享成功！已复制链接到剪贴板';
-                document.body.appendChild(toast);
-                // 3秒后移除
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => {
-                        document.body.removeChild(toast);
-                    }, 300);
-                }, 3000);
+            
+            // 详情按钮点击事件
+            document.querySelectorAll('.detail-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const spotId = this.getAttribute('data-spot-id');
+                    showDetailPopup(spotId);
+                });
             });
+            
+            // 打卡按钮点击事件
+            document.querySelectorAll('.checkin-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const spotId = this.getAttribute('data-spot-id');
+                    const spotName = document.getElementById(spotId).getAttribute('data-spot-name');
+                    toggleCheckin(spotId, spotName);
+                });
+            });
+            
+            // 返回顶部按钮
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 滚动监听
+            window.addEventListener('scroll', function() {
+                // 显示/隐藏返回顶部按钮
+                if (window.scrollY > 300) {
+                    backToTop.classList.add('show');
+                } else {
+                    backToTop.classList.remove('show');
+                }
+                
+                // 导航栏激活状态
+                updateNavActive();
+            });
+            
+            // 初始化打卡统计
+            updateCheckinStats();
         });
-
-        // 4. 返回顶部按钮
-        const backToTopBtn = document.getElementById('backToTop');
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 300) {
-                backToTopBtn.classList.add('show');
+        
+        // 显示详情弹窗
+        function showDetailPopup(spotId) {
+            const spotElement = document.getElementById(spotId);
+            if (!spotElement) return;
+            
+            // 获取景点信息
+            const title = spotElement.querySelector('h4').textContent;
+            const image = spotElement.querySelector('img').src;
+            const content = spotElement.querySelector('p').textContent;
+            const ratingElement = spotElement.querySelector('.flex.items-center.gap-1.text-secondary');
+            
+            // 填充弹窗内容
+            document.getElementById('popupTitle').textContent = title;
+            document.getElementById('popupImage').src = image;
+            document.getElementById('popupImage').alt = title;
+            document.getElementById('popupContent').textContent = content;
+            
+            // 复制评分
+            const popupRating = document.getElementById('popupRating');
+            popupRating.innerHTML = ratingElement.innerHTML;
+            
+            // 显示弹窗
+            detailPopup.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 关闭详情弹窗
+        function closeDetailPopup() {
+            detailPopup.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        
+        // 切换打卡状态
+        function toggleCheckin(spotId, spotName) {
+            const spotCard = document.getElementById(spotId);
+            const checkinBtn = spotCard.querySelector('.checkin-btn');
+            
+            if (checkinSpots.has(spotId)) {
+                // 取消打卡
+                checkinSpots.delete(spotId);
+                spotCard.classList.remove('checked-in');
+                checkinBtn.innerHTML = '<i class="fa-solid fa-map-pin"></i> 打卡景点';
+                showToast(`已取消${spotName}打卡`);
             } else {
-                backToTopBtn.classList.remove('show');
+                // 打卡
+                checkinSpots.add(spotId);
+                spotCard.classList.add('checked-in');
+                checkinBtn.innerHTML = '<i class="fa-solid fa-check"></i> 已打卡';
+                showToast(`${spotName}打卡成功！`);
             }
-        });
-
-        backToTopBtn.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // 5. 导航栏激活状态切换
-        const navLinks = document.querySelectorAll('.nav-link');
-        const sections = document.querySelectorAll('section[id]');
-
-        window.addEventListener('scroll', function() {
-            let current = '';
+            
+            // 更新打卡统计
+            updateCheckinStats();
+        }
+        
+        // 显示提示框
+        function showToast(message) {
+            const toastText = document.getElementById('toastText');
+            toastText.textContent = message;
+            
+            // 显示提示
+            checkinToast.classList.remove('opacity-0', 'translate-y-4');
+            checkinToast.classList.add('opacity-100', 'translate-y-0');
+            
+            // 3秒后隐藏
+            setTimeout(() => {
+                checkinToast.classList.add('opacity-0', 'translate-y-4');
+                checkinToast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        }
+        
+        // 更新打卡统计
+        function updateCheckinStats() {
+            const checkedCount = checkinSpots.size;
+            checkinCount.textContent = `已打卡 ${checkedCount}/${totalSpots}`;
+            
+            // 全部打卡完成提示
+            if (checkedCount === totalSpots) {
+                checkinStatsBtn.classList.add('bg-primary/20', 'text-primary');
+                checkinStatsBtn.classList.remove('bg-secondary/10', 'text-secondary');
+            } else {
+                checkinStatsBtn.classList.remove('bg-primary/20', 'text-primary');
+                checkinStatsBtn.classList.add('bg-secondary/10', 'text-secondary');
+            }
+        }
+        
+        // 更新导航激活状态
+        function updateNavActive() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSection = '';
+            
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
                 const sectionHeight = section.clientHeight;
-                if (scrollY >= (sectionTop - 100)) {
-                    current = section.getAttribute('id');
+                
+                if (window.scrollY >= (sectionTop - 100)) {
+                    currentSection = section.getAttribute('id');
                 }
             });
-
+            
             navLinks.forEach(link => {
                 link.classList.remove('nav-active');
-                if (link.getAttribute('href').substring(1) === current) {
+                if (link.getAttribute('href') === `#${currentSection}`) {
                     link.classList.add('nav-active');
                 }
             });
-        });
+        }
     </script>
 </body>
 </html>
